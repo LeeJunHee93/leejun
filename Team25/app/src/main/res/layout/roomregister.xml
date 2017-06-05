@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:weightSum="1">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/rimg"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            />
+        <Button
+            android:id="@+id/imgupload"
+            android:text="사진 선택"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:onClick="imgclick"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="is connected?"
+        android:layout_marginBottom="5dp"
+        android:textSize="18dp"
+        android:textColor="#FFF"
+        android:background="#FF0000"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/tvIsConnected"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="공간명을 입력"/>
+
+        <EditText
+            android:id="@+id/address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="위치 입력"/>
+
+        <EditText
+            android:id="@+id/detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="상세정보"/>
+
+    </LinearLayout>
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:text="POST"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/btnPost"/>
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:orientation="vertical"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/scrollView1">
+
+    </ScrollView>
+
+</LinearLayout>
