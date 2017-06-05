@@ -72,8 +72,8 @@ public class myfrag1_2 extends Activity implements View.OnClickListener {
                         break;
                     }
                 }
-                ReservationRequest reservationRequest = new ReservationRequest();
-                reservationRequest.execute();
+                reservationPostRequest reservationpostrequest = new reservationPostRequest();
+                reservationpostrequest.execute();
             }
         });
     }
@@ -85,7 +85,7 @@ public class myfrag1_2 extends Activity implements View.OnClickListener {
                     b[i].setBackgroundColor(Color.parseColor("#C9CDF8"));
                     check[i]=true;
                 }
-                else{
+                else {
                     b[i].setBackgroundColor(Color.parseColor("#ffffff"));
                     check[i]=false;
                 }
@@ -109,66 +109,57 @@ public class myfrag1_2 extends Activity implements View.OnClickListener {
         tv.setText(Integer.toString(number));
     }
 
-    public class ReservationRequest extends AsyncTask<Void, Integer, Void> {
+    public class reservationPostRequest extends AsyncTask<Void, Integer, Void> {
         @Override
         protected Void doInBackground(Void... unused) {
-            POST();
+            String json;
+            try {
+                Log.i("roomRequest", "execute시작!");
 
+                String apiURL = MainActivity.SERVER_IP_PORT + "/home/reservation/"+roomId;
+                URL url = new URL(apiURL);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestProperty("Accept", "application/json");
+                con.setRequestProperty("Content-Type", "application/json");
+                con.setRequestMethod("POST");
+                if(login.cookieString != "")
+                    con.setRequestProperty("Cookie", login.cookieString);
+
+                con.setDoInput(true);
+                con.setDoOutput(true);
+                con.setUseCaches(false);
+                con.setDefaultUseCaches(false);
+
+                Log.i("roomRequest", "연결직전");
+                con.connect();
+                Log.i("roomRequest", "연결!");
+
+                JSONObject data = new JSONObject();
+                data.accumulate("date", reservationDate);
+                data.accumulate("start_time", start_time);
+                data.accumulate("end_time", end_time);
+                data.accumulate("number", number);
+
+                json = data.toString();
+                Log.i("JSONdata", json);
+
+                OutputStream wr = con.getOutputStream();
+                wr.write(json.getBytes("utf-8"));
+                wr.flush();
+                wr.close();
+
+                Log.i("roomRequest", "쓰기성공!");
+
+                int responseCode = con.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.i("roomRequest", "정상");
+                } else {
+                    Log.i("roomRequest", "에러!");
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
             return null;
         }
-
-    }
-
-    public String POST() {
-        String json;
-        try {
-            Log.i("roomRequest", "execute시작!");
-
-            String apiURL = "http://192.168.0.58:3003/home/reservation/"+roomId;
-            URL url = new URL(apiURL);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Accept", "application/json");
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            if(login.cookieString != "")
-                con.setRequestProperty("Cookie", login.cookieString);
-
-            con.setDoInput(true);
-            con.setDoOutput(true);
-            con.setUseCaches(false);
-            con.setDefaultUseCaches(false);
-
-            Log.i("roomRequest", "연결직전");
-            con.connect();
-            Log.i("roomRequest", "연결!");
-
-            JSONObject data = new JSONObject();
-            data.accumulate("date", reservationDate);
-            data.accumulate("start_time", start_time);
-            data.accumulate("end_time", end_time);
-            data.accumulate("number", number);
-
-            json = data.toString();
-            Log.i("JSONdata", json);
-
-            OutputStream wr = con.getOutputStream();
-            wr.write(json.getBytes("utf-8"));
-            wr.flush();
-            wr.close();
-
-            Log.i("roomRequest", "쓰기성공!");
-
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) { // 정상 호출
-                //              br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                Log.i("roomRequest", "정상");
-            } else {  // 에러 발생
-                //             br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-                Log.i("roomRequest", "에러!");
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        return null;
     }
 }

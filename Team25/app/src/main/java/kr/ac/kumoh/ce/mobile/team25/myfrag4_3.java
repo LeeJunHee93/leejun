@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -29,8 +28,8 @@ import java.net.URL;
 
 public class myfrag4_3 extends Activity {
     final int PICK_IMAGE = 100;
-    TextView tv;
-    EditText e1, e2, e3,e4;
+
+    EditText sname, people, etc,ip;
     Button btn;
     String name_Str, pickpath;
     Uri uri;
@@ -40,10 +39,10 @@ public class myfrag4_3 extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.myfrag4_3);
-        e1 = (EditText) findViewById(R.id.sname);
-        e2 = (EditText) findViewById(R.id.people);
-        e3 = (EditText) findViewById(R.id.etc);
-        e4=(EditText)findViewById(R.id.ip);
+        sname = (EditText) findViewById(R.id.sname);
+        people = (EditText) findViewById(R.id.people);
+        etc = (EditText) findViewById(R.id.etc);
+        ip=(EditText)findViewById(R.id.ip);
         btn = (Button) findViewById(R.id.btn);
 
         btn.setOnClickListener(myClickListner);
@@ -68,7 +67,6 @@ public class myfrag4_3 extends Activity {
         String boundary = "*****";
 
         try {
-            // open connection
             URL urlCon = new URL(url);
             HttpURLConnection conn = (HttpURLConnection)urlCon.openConnection();
             conn.setDoInput(true); //input 허용
@@ -81,15 +79,19 @@ public class myfrag4_3 extends Activity {
 
             conn.connect();
 
-            // write data
             DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
 
-            //text 전송
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"name\"\r\n\r\n" + e1.getText().toString());
+            dos.writeBytes("Content-Disposition: form-data; name=\"sname\"\r\n\r\n" + sname.getText().toString());
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"address\"\r\n\r\n" + e2.getText().toString());
+            dos.writeBytes("Content-Disposition: form-data; name=\"people\"\r\n\r\n" + people.getText().toString());
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"etc\"\r\n\r\n" + etc.getText().toString());
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"ip\"\r\n\r\n" + ip.getText().toString());
             dos.writeBytes(lineEnd);
 
             Log.i("죽을랑가!!!!!", "!! !!!");
@@ -113,7 +115,7 @@ public class myfrag4_3 extends Activity {
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-                dos.flush(); // finish upload...
+                dos.flush();
             }
             fileInputStream.close();
 
@@ -149,7 +151,7 @@ public class myfrag4_3 extends Activity {
         return result;
     }
 
-    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+    private class roomPostRequest extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             return POST(urls[0]);
@@ -158,7 +160,6 @@ public class myfrag4_3 extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
                 try {
@@ -172,12 +173,10 @@ public class myfrag4_3 extends Activity {
                     Log.i("파일", "파일성공");
 
                 } catch (FileNotFoundException e) {
-                    // TODO Auto-generated catch block
                     Log.i("파일", "파일에러");
                     e.printStackTrace();
                 } catch (IOException e) {
                     Log.i("파일", "파일에러");
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -215,8 +214,8 @@ public class myfrag4_3 extends Activity {
     View.OnClickListener myClickListner = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            HttpAsyncTask httpTask = new HttpAsyncTask();
-            httpTask.execute("http://192.168.0.58:3003/host/insert");
+            roomPostRequest roompostrequest = new roomPostRequest();
+            roompostrequest.execute(MainActivity.SERVER_IP_PORT + "/host/insert");
             finish();
         }
     };
@@ -225,10 +224,11 @@ public class myfrag4_3 extends Activity {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";
         String result = "";
+
         while((line = bufferedReader.readLine()) != null)
             result += line;
-
         inputStream.close();
+
         return result;
     }
 }

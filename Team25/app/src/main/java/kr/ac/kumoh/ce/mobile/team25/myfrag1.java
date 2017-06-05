@@ -68,19 +68,19 @@ public class myfrag1 extends Fragment implements AdapterView.OnItemClickListener
         mQueue = new RequestQueue(cache, network);
         mQueue.start();
         mImageLoader = new ImageLoader(mQueue, new LruBitmapCache(LruBitmapCache.getCacheSize(getActivity())));
-        back task = new back();
-        task.execute("http://192.168.0.58:3003/home/list");
+        homelistGetRequest homelistgetrequest = new homelistGetRequest();
+        homelistgetrequest.execute(MainActivity.SERVER_IP_PORT + "/home/list");
         return rootView;
     }
 
-    private class back extends AsyncTask<String, Integer, String> {
+    private class homelistGetRequest extends AsyncTask<String, Integer, String> {
         @Override
         public String doInBackground(String... urls) {
             Log.i("task", "실행?");
 
             try {
-                URL myFileUrl = new URL(urls[0]);
-                HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
+                URL url = new URL(urls[0]);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setDoInput(true);
 
@@ -206,7 +206,7 @@ public class myfrag1 extends Fragment implements AdapterView.OnItemClickListener
             }
             holder.txRoom.setText(getItem(position).getName());
             holder.txLoc.setText(getItem(position).getLoc());
-            holder.imimage.setImageUrl("http://192.168.0.58:3003/" + getItem(position).getImage(), mImageLoader);
+            holder.imimage.setImageUrl(MainActivity.SERVER_IP_PORT + getItem(position).getImage(), mImageLoader);
             return convertView;
         }
     }

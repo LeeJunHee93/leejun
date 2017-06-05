@@ -1,4 +1,5 @@
 package kr.ac.kumoh.ce.mobile.team25;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -28,7 +29,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 
 
 public class myfrag4_1 extends Activity {
@@ -56,6 +56,7 @@ public class myfrag4_1 extends Activity {
 
         btn = (Button) findViewById(R.id.btn);
         btn.setOnClickListener(myClickListner);
+
     }
 
     public void init_webView() {
@@ -66,8 +67,7 @@ public class myfrag4_1 extends Activity {
 
         webView.addJavascriptInterface(new AndroidBridge(), "TestApp");
         webView.setWebChromeClient(new WebChromeClient());
-        webView.loadUrl("http://codeman77.ivyro.net/getAddress.php");
-
+        webView.loadUrl("file:///android_asset/daum.html");
     }
 
     private class AndroidBridge {
@@ -105,7 +105,6 @@ public class myfrag4_1 extends Activity {
         String boundary = "*****";
 
         try {
-            // open connection
             URL urlCon = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) urlCon.openConnection();
             conn.setDoInput(true); //input 허용
@@ -118,16 +117,14 @@ public class myfrag4_1 extends Activity {
 
             conn.connect();
 
-            // write data
             DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
 
-            //text 전송
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"name\"\r\n\r\n" + URLEncoder.encode(e1.getText().toString(), "utf-8"));
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"address\"\r\n\r\n" + URLEncoder.encode(result.toString(), "utf-8"));
-            dos.writeBytes(lineEnd);
+            dos.writeUTF(twoHyphens + boundary + lineEnd);
+            dos.writeUTF("Content-Disposition: form-data; name=\"name\"\r\n\r\n" + e1.getText().toString());
+            dos.writeUTF(lineEnd);
+            dos.writeUTF(twoHyphens + boundary + lineEnd);
+            dos.writeUTF("Content-Disposition: form-data; name=\"address\"\r\n\r\n" + result.toString());
+            dos.writeUTF(lineEnd);
             Log.i("죽을랑가!!!!!", "!! !!!");
 
             dos.writeBytes(twoHyphens + boundary + lineEnd);
@@ -181,7 +178,7 @@ public class myfrag4_1 extends Activity {
         return result;
     }
 
-    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+    private class studyroomPostRequest extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             return POST(urls[0]);
@@ -190,7 +187,6 @@ public class myfrag4_1 extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
                 try {
@@ -204,12 +200,10 @@ public class myfrag4_1 extends Activity {
                     Log.i("파일", "파일성공");
 
                 } catch (FileNotFoundException e) {
-                    // TODO Auto-generated catch block
                     Log.i("파일", "파일에러");
                     e.printStackTrace();
                 } catch (IOException e) {
                     Log.i("파일", "파일에러");
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -249,13 +243,13 @@ public class myfrag4_1 extends Activity {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(myfrag4_1.this, myfrag4_2.class);
-            HttpAsyncTask httpTask = new HttpAsyncTask();
-            httpTask.execute("http://192.168.0.58:3003/host/add");
+            studyroomPostRequest studyroompostrequest = new studyroomPostRequest();
+            studyroompostrequest.execute(MainActivity.SERVER_IP_PORT + "/host/add");
             startActivity(intent);
         }
     };
 
-    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
+    private String convertInputStreamToString(InputStream inputStream) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = "";
         String result = "";

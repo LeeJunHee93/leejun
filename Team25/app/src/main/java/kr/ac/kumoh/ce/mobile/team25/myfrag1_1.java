@@ -1,5 +1,4 @@
 package kr.ac.kumoh.ce.mobile.team25;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,25 +44,26 @@ import java.util.List;
 public class myfrag1_1 extends Activity {
 
     String result = "";
-    protected ArrayList<myfrag1_1.sroominfo> rArray = new ArrayList<myfrag1_1.sroominfo>();
+    protected ArrayList<sroominfo> rArray = new ArrayList<sroominfo>();
 
 
     protected JSONObject mResult = null;
     protected ListView mList;
-    protected myfrag1_1.sroomAdapter mAdapter;
+    protected sroomAdapter mAdapter;
     protected RequestQueue mQueue = null;
     protected ImageLoader mImageLoader = null;
+    ImageView map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_my1_1);
-
+        map=(ImageView)findViewById(R.id.map);
         Intent intent = getIntent();
         String id = intent.getStringExtra("id");
         String img=intent.getStringExtra("img");
-        rArray = new ArrayList<myfrag1_1.sroominfo>();
-        mAdapter = new myfrag1_1.sroomAdapter(this, R.layout.listitem2, rArray);
+        rArray = new ArrayList<sroominfo>();
+        mAdapter = new sroomAdapter(this, R.layout.listitem2, rArray);
         mList = (ListView)findViewById(R.id.listview2);
         mList.setAdapter(mAdapter);
 
@@ -71,20 +72,18 @@ public class myfrag1_1 extends Activity {
         mQueue = new RequestQueue(cache, network);
         mQueue.start();
         mImageLoader = new ImageLoader(mQueue, new LruBitmapCache(LruBitmapCache.getCacheSize(this)));
-        myfrag1_1.back task = new myfrag1_1.back();
-        task.execute("http://192.168.0.58:3003/home/info/"+id);
+        roomGetRequest roomgetrequest = new roomGetRequest();
+        roomgetrequest.execute(MainActivity.SERVER_IP_PORT + "/home/info/"+id);
         mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
-                String roomid = mAdapter.getItem(pos).getId();
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(myfrag1_1.this, myfrag1_2.class);
-                intent.putExtra("roomid", roomid);
                 startActivity(intent);
             }
         });
 
     }
-    private class back extends AsyncTask<String, Integer, String> {
+    private class roomGetRequest extends AsyncTask<String, Integer, String> {
         @Override
         public String doInBackground(String... urls) {
             Log.i("task", "실행?");
@@ -99,6 +98,7 @@ public class myfrag1_1 extends Activity {
                 conn.connect();
                 Log.i("task", "연결!");
 
+                Log.i("task", "비트맵?");
                 InputStream inputStream = conn.getInputStream();
 
                 if (inputStream != null)
@@ -121,13 +121,12 @@ public class myfrag1_1 extends Activity {
                 String name = studyroom.getString("name");
                 String address = studyroom.getString("address");
                 NetworkImageView immg=(NetworkImageView)findViewById(R.id.room);
-                immg.setImageUrl("http://192.168.0.58:3003/"+img,mImageLoader);
+                immg.setImageUrl(MainActivity.SERVER_IP_PORT + "/"+img,mImageLoader);
                 TextView nname=(TextView)findViewById(R.id.rname);
                 nname.setText(name);
                 TextView adr=(TextView)findViewById(R.id.address);
                 adr.setText(address);
                 JSONArray jsonMainNode=jsResult.getJSONArray("rooms");
-
                 for(int i=0 ;i<jsonMainNode.length();i++) {
                     JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
 
@@ -138,7 +137,7 @@ public class myfrag1_1 extends Activity {
                     String desc=jsonChildNode.getString("description");
                     String image = jsonChildNode.getString("img");
 
-                    rArray.add(new myfrag1_1.sroominfo(id,ip,sname,max,desc,image));
+                    rArray.add(new sroominfo(id,ip,sname,max,desc,image));
                 }
                 mAdapter.notifyDataSetChanged();
             } catch (JSONException e) {
@@ -165,6 +164,8 @@ public class myfrag1_1 extends Activity {
         private String max;
         private String etc;
 
+
+
         public sroominfo(String id,String ip,String sroom, String max, String etc,String img) {
             this.id=id;
             this.ip=ip;
@@ -172,19 +173,23 @@ public class myfrag1_1 extends Activity {
             this.sroom = sroom;
             this.max = max;
             this.etc = etc;
-
         }
-        public String getId(){return id;}
-        public String getip(){return ip;}
-        public String getImg(){return img;}
+
+        public String getId(){
+            return id;
+        }
+        public String getip(){
+            return ip;
+        }
+        public String getImg(){
+            return img;
+        }
         public String getSroom() {
             return sroom;
         }
-
         public String getMax() {
             return max;
         }
-
         public String getEtc() {
             return etc;
         }
@@ -198,19 +203,19 @@ public class myfrag1_1 extends Activity {
         NetworkImageView imimage;
     }
 
-    public class sroomAdapter extends ArrayAdapter<myfrag1_1.sroominfo> {
+    public class sroomAdapter extends ArrayAdapter<sroominfo> {
 
-        public sroomAdapter(Context context, int resource, List<myfrag1_1.sroominfo> objects) {
+        public sroomAdapter(Context context, int resource, List<sroominfo> objects) {
             super(context, resource, objects);
         }
 
         @NonNull
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            myfrag1_1.sroomViewHolder holder;
+            sroomViewHolder holder;
             if (convertView == null) {
                 convertView = myfrag1_1.this.getLayoutInflater().inflate(R.layout.listitem2, parent, false);
-                holder = new myfrag1_1.sroomViewHolder();
+                holder = new sroomViewHolder();
                 holder.txsroom = (TextView) convertView.findViewById(R.id.sname);
                 holder.txmax = (TextView) convertView.findViewById(R.id.max)                ;
                 holder.txetc = (TextView) convertView.findViewById(R.id.etc);
@@ -218,13 +223,14 @@ public class myfrag1_1 extends Activity {
                 convertView.setTag(holder);
 
             } else {
-                holder = (myfrag1_1.sroomViewHolder) convertView.getTag();
+                holder = (sroomViewHolder) convertView.getTag();
             }
             holder.txsroom.setText(getItem(position).getSroom());
             holder.txmax.setText(getItem(position).getMax());
             holder.txetc.setText(getItem(position).getEtc());
-            holder.imimage.setImageUrl("http://192.168.0.58:3003/" + getItem(position).getImg(), mImageLoader);
+            holder.imimage.setImageUrl(MainActivity.SERVER_IP_PORT + "/" + getItem(position).getImg(), mImageLoader);
             return convertView;
         }
     }
+
 }

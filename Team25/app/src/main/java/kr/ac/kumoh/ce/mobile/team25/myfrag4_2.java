@@ -44,14 +44,14 @@ import java.util.List;
 public class myfrag4_2 extends Activity {
     Button sbtn;
     String result = "";
-    protected ArrayList<myfrag4_2.sroominfo> rArray = new ArrayList<myfrag4_2.sroominfo>();
 
-
+    protected ArrayList<sroominfo> rArray = new ArrayList<myfrag4_2.sroominfo>();
     protected JSONObject mResult = null;
     protected ListView mList;
-    protected myfrag4_2.sroomAdapter mAdapter;
+    protected sroomAdapter mAdapter;
     protected RequestQueue mQueue = null;
     protected ImageLoader mImageLoader = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,11 +67,11 @@ public class myfrag4_2 extends Activity {
         mQueue = new RequestQueue(cache, network);
         mQueue.start();
         mImageLoader = new ImageLoader(mQueue, new LruBitmapCache(LruBitmapCache.getCacheSize(this)));
-        myfrag4_2.back task = new myfrag4_2.back();
-        task.execute("http://192.168.0.58:3003/host/info");
+        roominfoGetRequest roominfogetrequest = new roominfoGetRequest();
+        roominfogetrequest.execute(MainActivity.SERVER_IP_PORT + "/host/info");
 
     }
-    private class back extends AsyncTask<String, Integer, String> {
+    private class roominfoGetRequest extends AsyncTask<String, Integer, String> {
         @Override
         public String doInBackground(String... urls) {
             Log.i("task", "실행?");
@@ -117,7 +117,7 @@ public class myfrag4_2 extends Activity {
                     Log.i("loc", loc);
                     String image = jsonChildNode.getString("img");
                     Log.i("image", image);
-                    rArray.add(new myfrag4_2.sroominfo(adid,id,rname, loc,image));
+                    rArray.add(new sroominfo(adid,id,rname, loc,image));
                 }
                 mAdapter.notifyDataSetChanged();
             } catch (JSONException e) {
@@ -177,19 +177,19 @@ public class myfrag4_2 extends Activity {
         NetworkImageView imimage;
     }
 
-    public class sroomAdapter extends ArrayAdapter<myfrag4_2.sroominfo> {
+    public class sroomAdapter extends ArrayAdapter<sroominfo> {
 
-        public sroomAdapter(Context context, int resource, List<myfrag4_2.sroominfo> objects) {
+        public sroomAdapter(Context context, int resource, List<sroominfo> objects) {
             super(context, resource, objects);
         }
 
         @NonNull
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            myfrag4_2.sRoomViewHolder holder;
+            sRoomViewHolder holder;
             if (convertView == null) {
                 convertView = myfrag4_2.this.getLayoutInflater().inflate(R.layout.listitem2, parent, false);
-                holder = new myfrag4_2.sRoomViewHolder();
+                holder = new sRoomViewHolder();
                 holder.txsroom = (TextView) convertView.findViewById(R.id.sname);
                 holder.txpeople = (TextView) convertView.findViewById(R.id.max);
                 holder.txdesc = (TextView) convertView.findViewById(R.id.etc);
@@ -198,12 +198,12 @@ public class myfrag4_2 extends Activity {
                 convertView.setTag(holder);
 
             } else {
-                holder = (myfrag4_2.sRoomViewHolder) convertView.getTag();
+                holder = (sRoomViewHolder) convertView.getTag();
             }
             holder.txsroom.setText(getItem(position).getSname());
             holder.txpeople.setText(getItem(position).getPeople());
             holder.txdesc.setText(getItem(position).getDesc());
-            holder.imimage.setImageUrl("http://192.168.0.58:3003/" + getItem(position).getImage(), mImageLoader);
+            holder.imimage.setImageUrl(MainActivity.SERVER_IP_PORT + "/" + getItem(position).getImage(), mImageLoader);
             return convertView;
         }
     }

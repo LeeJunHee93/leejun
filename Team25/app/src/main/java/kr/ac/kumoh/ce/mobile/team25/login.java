@@ -25,13 +25,13 @@ public class login extends Activity {
     private static Context mContext;
     String token;
     static String json="", cookieString="";
-    loginDB logindb;
+    loginPostRequest loginpostrequest;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        logindb = new loginDB();
+        loginpostrequest = new loginPostRequest();
 
         mContext = getApplicationContext();
         setContentView(R.layout.mylogin);
@@ -59,7 +59,7 @@ public class login extends Activity {
                 String tokenType = mOAuthLoginModule.getTokenType(mContext);
                 Log.i("출력", accessToken);
                 token = accessToken;
-                logindb.execute();
+                loginpostrequest.execute();
                 finish();
 
             } else {
@@ -73,87 +73,73 @@ public class login extends Activity {
 
     };
 
-    public class loginDB extends AsyncTask<Void, Integer, Void> {
+    public class loginPostRequest extends AsyncTask<Void, Integer, Void> {
         @Override
         protected Void doInBackground(Void... unused) {
-            POST();
+            try {
+                Log.i("login", "execute시작!");
 
+                String COOKIES_HEADER = "Set-Cookie";
+
+                String apiURL = MainActivity.SERVER_IP_PORT + "/auth/naver";
+                URL url = new URL(apiURL);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                Log.i("login", "연결!?!?!?!");
+                con.setRequestProperty("Accept", "application/json");
+                con.setRequestProperty("Content-Type", "application/json");
+                con.setRequestMethod("POST");
+                Log.i("login", "연결1/2");
+
+                con.setDoInput(true);
+                con.setDoOutput(true);
+                con.setUseCaches(false);
+                con.setDefaultUseCaches(false);
+
+                Log.i("login", "연결직전");
+                con.connect();
+                Log.i("login", "연결!");
+
+                JSONObject data = new JSONObject();
+                data.accumulate("access_token", token);
+                json = data.toString();
+                Log.i("JSONdata", json);
+
+                OutputStream wr = con.getOutputStream();
+                wr.write(json.getBytes("utf-8"));
+                wr.flush();
+                wr.close();
+
+                Map<String, List<String>> headerFields = con.getHeaderFields();
+                List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
+
+                if(cookiesHeader != null) {
+                    for (String cookie : cookiesHeader) {
+                        String cookieName = HttpCookie.parse(cookie).get(0).getName();
+                        String cookieValue = HttpCookie.parse(cookie).get(0).getValue();
+
+                        cookieString = cookieName + "=" + cookieValue;
+
+                        CookieManager.getInstance().setCookie(MainActivity.SERVER_IP_PORT, cookieString);
+                    }
+                }
+                Log.i("login", "쓰기성공!");
+
+                int responseCode = con.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) { // 정상 호출
+                    Log.i("login", "정상");
+
+
+                } else {  // 에러 발생
+                    Log.i("login", "에러!");
+                }
+
+            } catch (Exception e) {
+                System.out.println(e);
+            }
             return null;
         }
 
     }
-
-    public String POST() {
-        try {
-            Log.i("login", "execute시작!");
-
-            String COOKIES_HEADER = "Set-Cookie";
-
-            String apiURL = "http://192.168.0.58:3003/auth/naver";
-            URL url = new URL(apiURL);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            Log.i("login", "연결!?!?!?!");
-            con.setRequestProperty("Accept", "application/json");
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            Log.i("login", "연결1/2");
-
-            con.setDoInput(true);
-            con.setDoOutput(true);
-            con.setUseCaches(false);
-            con.setDefaultUseCaches(false);
-
-            Log.i("login", "연결직전");
-            con.connect();
-
-            Log.i("login", "연결!");
-
-            JSONObject data = new JSONObject();
-            data.accumulate("access_token", token);
-            json = data.toString();
-            Log.i("JSONdata", json);
-
-            OutputStream wr = con.getOutputStream();
-            wr.write(json.getBytes("utf-8"));
-            wr.flush();
-            wr.close();
-
-            Map<String, List<String>> headerFields = con.getHeaderFields();
-            List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
-
-            if(cookiesHeader != null) {
-                for (String cookie : cookiesHeader) {
-                    String cookieName = HttpCookie.parse(cookie).get(0).getName();
-                    String cookieValue = HttpCookie.parse(cookie).get(0).getValue();
-
-                    cookieString = cookieName + "=" + cookieValue;
-
-                    CookieManager.getInstance().setCookie("http://192.168.0.58:3003", cookieString);
-
-                }
-            }
-            Log.i("login", "쓰기성공!");
-
-            int responseCode = con.getResponseCode();
-            //         BufferedReader br;
-            if (responseCode == HttpURLConnection.HTTP_OK) { // 정상 호출
-                //              br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                Log.i("login", "정상");
-
-
-            } else {  // 에러 발생
-                //             br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-                Log.i("login", "에러!");
-
-            }
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        return null;
-    }
-
-
     public void gbtnclick(View v) {
         Log.i("server request", "google");
     }
